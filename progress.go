@@ -27,9 +27,7 @@ func pickColor(percentage int) string {
 
 func buildSVG(percentage int) string {
 	progress := percentage - (percentage / 10)
-	begining := `
-    <html>
-    <svg width="90.0" height="20" xmlns="http://www.w3.org/2000/svg">
+	begining := `<svg width="90.0" height="20" xmlns="http://www.w3.org/2000/svg">
       <linearGradient id="a" x2="0" y2="100%%">
         <stop offset="0" stop-color="#bbb" stop-opacity=".2"/>
         <stop offset="1" stop-opacity=".1"/>
@@ -50,9 +48,7 @@ func buildSVG(percentage int) string {
 	final := `%%
         </text>
       </g>
-    </svg>
-  </html>
-  `
+	</svg>`
 
 	return fmt.Sprintf("%s%s%s%s%d%s", begining, backgroundBar, percentageBar, next, percentage, final)
 }
@@ -63,6 +59,7 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 
 	if x, err := strconv.Atoi(id); err == nil {
 		fmt.Printf("The percentage is: %d\n", x)
+		w.Header().Add("Content-Type", "image/svg+xml")
 		fmt.Fprintf(w, buildSVG(x))
 	}
 }
