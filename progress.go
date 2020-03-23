@@ -1,4 +1,4 @@
-package main
+package progress
 
 import (
 	"fmt"
@@ -57,15 +57,12 @@ func buildSVG(percentage int) string {
 	return fmt.Sprintf("%s%s%s%s%d%s", begining, backgroundBar, percentageBar, next, percentage, final)
 }
 
-func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		var id = fmt.Sprintf(path.Base(r.URL.Path))
+// Progress ... Entrypoint of our Cloud Function
+func Progress(w http.ResponseWriter, r *http.Request) {
+	var id = fmt.Sprintf(path.Base(r.URL.Path))
 
-		if x, err := strconv.Atoi(id); err == nil {
-			fmt.Printf("The percentage is: %d\n", x)
-			fmt.Fprintf(w, buildSVG(x))
-		}
-	})
-
-	http.ListenAndServe(":8080", nil)
+	if x, err := strconv.Atoi(id); err == nil {
+		fmt.Printf("The percentage is: %d\n", x)
+		fmt.Fprintf(w, buildSVG(x))
+	}
 }
