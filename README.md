@@ -11,7 +11,7 @@ So I decided to recreated.
 
 Add it as an image in your favorite markdown document, like this github readme, and change the progress number at the end.
 
-    ![](https://us-central1-una-fiesta-bonita-1.cloudfunctions.net/progress/10)
+    ![](https://us-central1-progress-markdown.cloudfunctions.net/progress/10)
 
 ## Examples
 
