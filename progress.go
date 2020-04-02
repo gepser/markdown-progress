@@ -40,12 +40,12 @@ func pickColor(percentage int) string {
 func Progress(w http.ResponseWriter, r *http.Request) {
 	var id = fmt.Sprintf(path.Base(r.URL.Path))
 
-	if x, err := strconv.Atoi(id); err == nil {
+	if percentage, err := strconv.Atoi(id); err == nil {
 		data := Data{
 			BackgroundColor: grey,
-			Percentage:      x,
-			Progress:        x - (x / 10),
-			PickedColor:     pickColor(x),
+			Percentage:      percentage,
+			Progress:        percentage - (percentage / 10),
+			PickedColor:     pickColor(percentage),
 		}
 
 		tpl, err := template.ParseFiles("progress.html")
@@ -60,7 +60,7 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln(err)
 		}
 
-		fmt.Printf("The percentage is: %d\n", x)
+		fmt.Printf("The percentage is: %d\n", percentage)
 		w.Header().Add("Content-Type", "image/svg+xml")
 		fmt.Fprintf(w, buf.String())
 	}
