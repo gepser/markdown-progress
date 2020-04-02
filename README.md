@@ -25,6 +25,8 @@ Add it as an image in your favorite markdown document, like this github readme, 
 
 ## Deploy
 
+### Google CLoud
+
 Login and set the project in `gcloud` if you are nott already logged in.
 
     gcloud auth login
