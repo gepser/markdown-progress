@@ -1,11 +1,22 @@
 package progress
 
 import (
+	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"path"
 	"strconv"
+	"text/template"
 )
+
+// Data ... is the collectiion of inputs we need to fill our template
+type Data struct {
+	BackgroundColor string
+	Percentage      int
+	Progress        int
+	PickedColor     string
+}
 
 var grey = "#555"
 var red = "#d9534f"
@@ -25,41 +36,32 @@ func pickColor(percentage int) string {
 	return pickedColor
 }
 
-func buildSVG(percentage int) string {
-	progress := percentage - (percentage / 10)
-	begining := `<svg width="90.0" height="20" xmlns="http://www.w3.org/2000/svg">
-      <linearGradient id="a" x2="0" y2="100%%">
-        <stop offset="0" stop-color="#bbb" stop-opacity=".2"/>
-        <stop offset="1" stop-opacity=".1"/>
-      </linearGradient>
-  `
-	backgroundBar := fmt.Sprintf(`
-    <rect rx="4" x="0" width="90.0" height="20" fill="%s"/>
-    `, grey)
-
-	percentageBar := fmt.Sprintf(`
-    <rect rx="4" x="0" width="%d" height="20" fill="%s"/>
-    `, progress, pickColor(percentage))
-
-	next := `<rect rx="4" width="90.0" height="20" fill="url(#a)"/>
-    <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-    <text x="45.0" y="14">
-  `
-	final := `%%
-        </text>
-      </g>
-	</svg>`
-
-	return fmt.Sprintf("%s%s%s%s%d%s", begining, backgroundBar, percentageBar, next, percentage, final)
-}
-
 // Progress ... Entrypoint of our Cloud Function
 func Progress(w http.ResponseWriter, r *http.Request) {
 	var id = fmt.Sprintf(path.Base(r.URL.Path))
 
 	if x, err := strconv.Atoi(id); err == nil {
+		data := Data{
+			BackgroundColor: grey,
+			Percentage:      x,
+			Progress:        x - (x / 10),
+			PickedColor:     pickColor(x),
+		}
+
+		tpl, err := template.ParseFiles("progress.html")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		buf := new(bytes.Buffer)
+
+		err = tpl.Execute(buf, data)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		fmt.Printf("The percentage is: %d\n", x)
 		w.Header().Add("Content-Type", "image/svg+xml")
-		fmt.Fprintf(w, buildSVG(x))
+		fmt.Fprintf(w, buf.String())
 	}
 }
