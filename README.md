@@ -25,7 +25,7 @@ Add it as an image in your favorite markdown document, like this github readme, 
 
 ### Google Cloud
 
-Login and set the project in `gcloud` if you are nott already logged in.
+Login and set the project in `gcloud` if you are not already logged in.
 
     gcloud auth login
     gcloud config set project THE_PROJECT_NAME
