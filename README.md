@@ -5,7 +5,7 @@ Progress bars for markdown.
 Have you ever wanted to track some progress in your markdown documents?
 Well, I do, and I used `progressed.io` before but it was shutted down.
 
-So I decided to recreated.
+So I decided to recreate it.
 
 ## Usage
 
