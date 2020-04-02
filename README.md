@@ -21,8 +21,6 @@ Add it as an image in your favorite markdown document, like this github readme, 
 
 ![](https://us-central1-una-fiesta-bonita-1.cloudfunctions.net/progress/75)
 
-![](https://us-central1-una-fiesta-bonita-1.cloudfunctions.net/progress/100)
-
 ## Deploy
 
 ### Google CLoud
