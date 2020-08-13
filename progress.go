@@ -10,7 +10,7 @@ import (
 	"text/template"
 )
 
-// Data ... is the collectiion of inputs we need to fill our template
+// Data ... is the collection of inputs we need to fill our template
 type Data struct {
 	BackgroundColor string
 	Percentage      int
