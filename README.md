@@ -1,4 +1,4 @@
-# Markdown Progress ![](https://us-central1-progress-markdown.cloudfunctions.net/progress/100)
+# Markdown Progress ![](https://geps.dev/progress/100)
 
 Progress bars for markdown.
 
@@ -11,15 +11,15 @@ So I decided to recreate it.
 
 Add it as an image in your favorite markdown document, like this github readme, and change the progress number at the end.
 
-    ![](https://us-central1-progress-markdown.cloudfunctions.net/progress/10)
+    ![](https://geps.dev/progress/10)
 
 ## Examples
 
-![](https://us-central1-progress-markdown.cloudfunctions.net/progress/10)
+![](https://geps.dev/progress/10)
 
-![](https://us-central1-progress-markdown.cloudfunctions.net/progress/50)
+![](https://geps.dev/progress/50)
 
-![](https://us-central1-progress-markdown.cloudfunctions.net/progress/75)
+![](https://geps.dev/progress/75)
 
 ## Deploy
 
