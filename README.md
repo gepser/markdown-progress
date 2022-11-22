@@ -32,4 +32,4 @@ Login and set the project in `gcloud` if you are not already logged in.
 
 Deploy it as an HTTP Cloud Function with the `Progress` entrypoint.
 
-    gcloud functions deploy progress --runtime go113 --entry-point Progress --trigger-http --memory 128MB --allow-unauthenticated
+    gcloud functions deploy progress --runtime go116 --entry-point Progress --trigger-http --memory 128MB --allow-unauthenticated
