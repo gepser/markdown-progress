@@ -13,11 +13,14 @@
 .git
 .gitignore
 
-node_modules
-#!include:.gitignore
-
-#Example of color bars
-colors-example/
-
-#Exclude main library which is used to run it locally
+# Exclude main library which is used to run it locally
 cmd/
+
+# Exclude Go dependencies files since the purpose is to run it as a Cloud Function (lambda) and not to compile it
+go.mod
+go.sum
+
+# Exclude README, editorconfig, etc to save some bytes
+README.md
+.editorconfig
+LICENSE
