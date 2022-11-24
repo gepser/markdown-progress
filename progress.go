@@ -24,15 +24,14 @@ var yellow = "#f0ad4e"
 var green = "#5cb85c"
 
 func pickColor(percentage int) string {
-	pickedColor := red
+	pickedColor := green
 
 	if percentage >= 0 && percentage < 33 {
 		pickedColor = red
 	} else if percentage >= 33 && percentage < 70 {
 		pickedColor = yellow
-	} else {
-		pickedColor = green
 	}
+
 	return pickedColor
 }
 
