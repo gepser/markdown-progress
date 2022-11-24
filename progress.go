@@ -8,6 +8,8 @@ import (
 	"path"
 	"strconv"
 	"text/template"
+
+	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
 // Data ... is the collection of inputs we need to fill our template
@@ -33,6 +35,10 @@ func pickColor(percentage int) string {
 	}
 
 	return pickedColor
+}
+
+func init() {
+	functions.HTTP("Progress", Progress)
 }
 
 // Progress ... Entrypoint of our Cloud Function
