@@ -52,8 +52,8 @@ Change it to this:
     tpl, err := template.ParseFiles("progress.html")
 	//tpl, err := template.ParseFiles("src/progress/progress.html")
 
-:bangbang: | Don't commit these changes!
-:---: | :---
+> **Warning**
+> Don't commit these changes!
 
 Run it
 
