@@ -13,6 +13,9 @@ Add it as an image in your favorite markdown document, like this github readme, 
 
     ![](https://geps.dev/progress/10)
 
+> **Note**
+> I'll try to keep this domain name up as much as possible, so wish me a long life 😁
+
 ## Examples
 
 ![](https://geps.dev/progress/10)
@@ -22,6 +25,10 @@ Add it as an image in your favorite markdown document, like this github readme, 
 ![](https://geps.dev/progress/75)
 
 ## Deploy
+
+So if you want to host it and have your own domain, you can just deploy it on your preferred cloud.
+
+It's straight forward for GCP but with some little changes you can do the same for any cloud since this is a simple function (or lambda).
 
 ### Google Cloud
 
