@@ -16,6 +16,9 @@
 # Exclude main library which is used to run it locally
 cmd/
 
+# Exclude go.sum since it's generated before running it on the cloud
+go.sum
+
 # Exclude README, editorconfig, etc to save some bytes
 README.md
 .editorconfig
