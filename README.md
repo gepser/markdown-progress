@@ -40,7 +40,7 @@ Build the project so it downloads the dependencies
 
     go build
 
-Change the path of the template interchanging these two lines on the [progress file](progress.go).
+Change the path of the template interchanging these two lines on the [progress file](progress.go#L57).
 
 From this:
 
