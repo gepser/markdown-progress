@@ -53,6 +53,8 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 			PickedColor:     pickColor(percentage),
 		}
 
+		//To test it locally we should interchange these two paths
+		//tpl, err := template.ParseFiles("progress.html")
 		tpl, err := template.ParseFiles("src/progress/progress.html")
 		if err != nil {
 			log.Fatalln(err)
