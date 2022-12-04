@@ -25,13 +25,24 @@ var red = "#d9534f"
 var yellow = "#f0ad4e"
 var green = "#5cb85c"
 
-func pickColor(percentage int) string {
+func pickColor(percentage int, successColor string, warningColor string, dangerColor string) string {
 	pickedColor := green
+	if successColor != "" {
+		pickedColor = "#" + successColor
+	}
 
 	if percentage >= 0 && percentage < 33 {
-		pickedColor = red
+		if dangerColor != "" {
+			pickedColor = "#" + dangerColor
+		} else {
+			pickedColor = red
+		}
 	} else if percentage >= 33 && percentage < 70 {
-		pickedColor = yellow
+		if warningColor != "" {
+			pickedColor = "#" + warningColor
+		} else {
+			pickedColor = yellow
+		}
 	}
 
 	return pickedColor
@@ -46,11 +57,17 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 	var id = fmt.Sprintf(path.Base(r.URL.Path))
 
 	if percentage, err := strconv.Atoi(id); err == nil {
+
+		// Read (with the intention to overwrite) success, warning, and danger colors if provided
+		successColor := r.URL.Query().Get("successColor")
+		warningColor := r.URL.Query().Get("warningColor")
+		dangerColor := r.URL.Query().Get("dangerColor")
+
 		data := Data{
 			BackgroundColor: grey,
 			Percentage:      percentage,
 			Progress:        percentage - (percentage / 10),
-			PickedColor:     pickColor(percentage),
+			PickedColor:     pickColor(percentage, successColor, warningColor, dangerColor),
 		}
 
 		//To test it locally we should interchange these two paths
