@@ -24,6 +24,27 @@ Add it as an image in your favorite markdown document, like this github readme, 
 
 ![](https://geps.dev/progress/75)
 
+### Custom colors?
+
+If you want to customize the colors you can use this query params:
+
+    dangerColor
+    warningColor
+    successColor
+
+It will look like this:
+
+    ![](https://geps.dev/progress/32?dangerColor=800000&warningColor=ff9900&successColor=006600)
+
+And the results will look like this:
+
+
+![](https://geps.dev/progress/10?dangerColor=800000&warningColor=ff9900&successColor=006600)
+
+![](https://geps.dev/progress/50?dangerColor=800000&warningColor=ff9900&successColor=006600)
+
+![](https://geps.dev/progress/75?dangerColor=800000&warningColor=ff9900&successColor=006600)
+
 ## Deploy
 
 So if you want to host it and have your own domain, you can just deploy it on your preferred cloud.
