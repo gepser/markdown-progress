@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 	"text/template"
@@ -24,6 +25,15 @@ var grey = "#555"
 var red = "#d9534f"
 var yellow = "#f0ad4e"
 var green = "#5cb85c"
+
+const gcloudFuncSourceDir = "serverless_function_source_code"
+
+func fixDir() {
+	fileInfo, err := os.Stat(gcloudFuncSourceDir)
+	if err == nil && fileInfo.IsDir() {
+		_ = os.Chdir(gcloudFuncSourceDir)
+	}
+}
 
 func pickColor(percentage int, successColor string, warningColor string, dangerColor string) string {
 	pickedColor := green
@@ -49,6 +59,7 @@ func pickColor(percentage int, successColor string, warningColor string, dangerC
 }
 
 func init() {
+	fixDir()
 	functions.HTTP("Progress", Progress)
 }
 
@@ -70,9 +81,8 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 			PickedColor:     pickColor(percentage, successColor, warningColor, dangerColor),
 		}
 
-		//To test it locally we should interchange these two paths
-		//tpl, err := template.ParseFiles("progress.html")
-		tpl, err := template.ParseFiles("src/progress/progress.html")
+		tpl, err := template.ParseFiles("progress.html")
+
 		if err != nil {
 			log.Fatalln(err)
 		}
