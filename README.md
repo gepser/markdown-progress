@@ -68,21 +68,6 @@ Build the project so it downloads the dependencies
 
     go build
 
-Change the path of the template interchanging these two lines on the [progress file](progress.go#L57-L58).
-
-From this:
-
-    //tpl, err := template.ParseFiles("progress.html")
-	tpl, err := template.ParseFiles("src/progress/progress.html")
-
-Change it to this:
-
-    tpl, err := template.ParseFiles("progress.html")
-	//tpl, err := template.ParseFiles("src/progress/progress.html")
-
-> **Warning**
-> Don't commit these changes!
-
 Run it
 
     go run cmd/main.go
