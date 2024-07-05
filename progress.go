@@ -16,8 +16,8 @@ import (
 // Data ... is the collection of inputs we need to fill our template
 type Data struct {
 	BackgroundColor string
-	Percentage      int
-	Progress        int
+	Percentage      float64
+	Progress        float64
 	PickedColor     string
 }
 
@@ -35,7 +35,7 @@ func fixDir() {
 	}
 }
 
-func pickColor(percentage int, successColor string, warningColor string, dangerColor string) string {
+func pickColor(percentage float64, successColor string, warningColor string, dangerColor string) string {
 	pickedColor := green
 	if successColor != "" {
 		pickedColor = "#" + successColor
@@ -67,7 +67,7 @@ func init() {
 func Progress(w http.ResponseWriter, r *http.Request) {
 	var id = fmt.Sprintf(path.Base(r.URL.Path))
 
-	if percentage, err := strconv.Atoi(id); err == nil {
+	if percentage, err := strconv.ParseFloat(id, 64); err == nil {
 
 		// Read (with the intention to overwrite) success, warning, and danger colors if provided
 		successColor := r.URL.Query().Get("successColor")
@@ -94,7 +94,7 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln(err)
 		}
 
-		fmt.Printf("The percentage is: %d\n", percentage)
+		fmt.Printf("The percentage is: %.3f\n", percentage)
 		w.Header().Add("Content-Type", "image/svg+xml")
 		fmt.Fprintf(w, buf.String())
 	}
