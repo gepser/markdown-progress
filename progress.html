@@ -8,7 +8,11 @@
   <rect rx="4" width="90.0" height="20" fill="url(#a)"/>
   <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
     <text x="45.0" y="14">
-      {{printf "%.2f%%" .Percentage}}
+      {{if isInt .Percentage}}
+        {{printf "%.0f%%" .Percentage}}
+      {{else}}
+        {{printf "%.2f%%" .Percentage}}
+      {{end}}
     </text>
   </g>
 </svg>

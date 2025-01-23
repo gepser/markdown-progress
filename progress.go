@@ -13,7 +13,6 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
-// Data ... is the collection of inputs to fill our template
 type Data struct {
 	BackgroundColor string
 	Percentage      float64
@@ -64,7 +63,11 @@ func init() {
 	functions.HTTP("Progress", Progress)
 }
 
-// Progress ... Entrypoint of our Cloud Function
+// Template helper to check if a float is an integer
+func isInt(f float64) bool {
+	return f == float64(int(f))
+}
+
 func Progress(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
 
@@ -85,7 +88,11 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 		PickedColor:     pickColor(percentage, successColor, warningColor, dangerColor),
 	}
 
-	tpl, err := template.ParseFiles("progress.html")
+	// Parse template with custom "isInt" function
+	tpl := template.New("progress.html").Funcs(template.FuncMap{
+		"isInt": isInt,
+	})
+	tpl, err = tpl.ParseFiles("progress.html")
 	if err != nil {
 		log.Fatalln("Error parsing template:", err)
 	}
@@ -95,7 +102,7 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln("Error executing template:", err)
 	}
 
-	fmt.Printf("The percentage is: %.2f\n", percentage)
+	fmt.Printf("The percentage is: %v\n", percentage)
 	w.Header().Set("Content-Type", "image/svg+xml")
 	_, _ = w.Write(buf.Bytes())
 }
