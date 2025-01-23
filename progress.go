@@ -13,7 +13,7 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
-// Data ... is the collection of inputs we need to fill our template
+// Data ... is the collection of inputs to fill our template
 type Data struct {
 	BackgroundColor string
 	Percentage      float64
@@ -35,19 +35,20 @@ func fixDir() {
 	}
 }
 
-func pickColor(percentage float64, successColor string, warningColor string, dangerColor string) string {
+func pickColor(percentage float64, successColor, warningColor, dangerColor string) string {
 	pickedColor := green
 	if successColor != "" {
 		pickedColor = "#" + successColor
 	}
 
-	if percentage >= 0 && percentage < 33 {
+	switch {
+	case percentage >= 0 && percentage < 33:
 		if dangerColor != "" {
 			pickedColor = "#" + dangerColor
 		} else {
 			pickedColor = red
 		}
-	} else if percentage >= 33 && percentage < 70 {
+	case percentage >= 33 && percentage < 70:
 		if warningColor != "" {
 			pickedColor = "#" + warningColor
 		} else {
@@ -65,37 +66,36 @@ func init() {
 
 // Progress ... Entrypoint of our Cloud Function
 func Progress(w http.ResponseWriter, r *http.Request) {
-	var id = fmt.Sprintf(path.Base(r.URL.Path))
+	id := path.Base(r.URL.Path)
 
-	if percentage, err := strconv.ParseFloat(id, 64); err == nil {
-
-		// Read (with the intention to overwrite) success, warning, and danger colors if provided
-		successColor := r.URL.Query().Get("successColor")
-		warningColor := r.URL.Query().Get("warningColor")
-		dangerColor := r.URL.Query().Get("dangerColor")
-
-		data := Data{
-			BackgroundColor: grey,
-			Percentage:      percentage,
-			Progress:        percentage - (percentage / 10),
-			PickedColor:     pickColor(percentage, successColor, warningColor, dangerColor),
-		}
-
-		tpl, err := template.ParseFiles("progress.html")
-
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		buf := new(bytes.Buffer)
-
-		err = tpl.Execute(buf, data)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		fmt.Printf("The percentage is: %.3f\n", percentage)
-		w.Header().Add("Content-Type", "image/svg+xml")
-		fmt.Fprintf(w, buf.String())
+	percentage, err := strconv.ParseFloat(id, 64)
+	if err != nil {
+		http.Error(w, "Invalid percentage value", http.StatusBadRequest)
+		return
 	}
+
+	successColor := r.URL.Query().Get("successColor")
+	warningColor := r.URL.Query().Get("warningColor")
+	dangerColor := r.URL.Query().Get("dangerColor")
+
+	data := Data{
+		BackgroundColor: grey,
+		Percentage:      percentage,
+		Progress:        percentage - (percentage / 10),
+		PickedColor:     pickColor(percentage, successColor, warningColor, dangerColor),
+	}
+
+	tpl, err := template.ParseFiles("progress.html")
+	if err != nil {
+		log.Fatalln("Error parsing template:", err)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := tpl.Execute(buf, data); err != nil {
+		log.Fatalln("Error executing template:", err)
+	}
+
+	fmt.Printf("The percentage is: %.2f\n", percentage)
+	w.Header().Set("Content-Type", "image/svg+xml")
+	_, _ = w.Write(buf.Bytes())
 }
