@@ -18,6 +18,9 @@ type Data struct {
 	Percentage      float64
 	Progress        float64
 	PickedColor     string
+	Label           string
+	ShowLabel       bool
+	BarWidth        float64
 }
 
 var grey = "#555"
@@ -68,29 +71,95 @@ func isInt(f float64) bool {
 	return f == float64(int(f))
 }
 
+// Template helper for division
+func div(a, b float64) float64 {
+	if b == 0 {
+		return 0
+	}
+	return a / b
+}
+
 func Progress(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
 
-	percentage, err := strconv.ParseFloat(id, 64)
+	value, err := strconv.ParseFloat(id, 64)
 	if err != nil {
-		http.Error(w, "Invalid percentage value", http.StatusBadRequest)
+		http.Error(w, "Invalid value", http.StatusBadRequest)
 		return
 	}
 
 	successColor := r.URL.Query().Get("successColor")
 	warningColor := r.URL.Query().Get("warningColor")
 	dangerColor := r.URL.Query().Get("dangerColor")
+	barColor := r.URL.Query().Get("barColor")
+	customLabel := r.URL.Query().Get("label")
+	minStr := r.URL.Query().Get("min")
+	maxStr := r.URL.Query().Get("max")
+
+	// Determine if we're using custom label mode (data bar mode)
+	showLabel := customLabel != ""
+	
+	// Calculate percentage and bar width
+	var percentage float64
+	var barWidth float64
+	const defaultWidth = 90.0
+	
+	if showLabel && minStr != "" && maxStr != "" {
+		// Data bar mode: scale proportionally based on min/max
+		min, errMin := strconv.ParseFloat(minStr, 64)
+		max, errMax := strconv.ParseFloat(maxStr, 64)
+		
+		if errMin != nil || errMax != nil || min >= max {
+			http.Error(w, "Invalid min/max values", http.StatusBadRequest)
+			return
+		}
+		
+		// Calculate percentage for color picking (0-100)
+		if max > min {
+			percentage = ((value - min) / (max - min)) * 100
+		} else {
+			percentage = 0
+		}
+		
+		// Calculate bar width proportionally (leave some padding)
+		if max > min {
+			barWidth = ((value - min) / (max - min)) * (defaultWidth * 0.95)
+		} else {
+			barWidth = 0
+		}
+	} else {
+		// Original percentage mode
+		percentage = value
+		if percentage > 100 {
+			percentage = 100
+		}
+		barWidth = percentage - (percentage / 10)
+	}
+
+	// Determine bar color
+	var pickedColor string
+	if barColor != "" {
+		// Use custom bar color if provided (for data bars)
+		pickedColor = "#" + barColor
+	} else {
+		// Use percentage-based color logic
+		pickedColor = pickColor(percentage, successColor, warningColor, dangerColor)
+	}
 
 	data := Data{
 		BackgroundColor: grey,
 		Percentage:      percentage,
-		Progress:        percentage - (percentage / 10),
-		PickedColor:     pickColor(percentage, successColor, warningColor, dangerColor),
+		Progress:        barWidth,
+		BarWidth:        defaultWidth,
+		PickedColor:     pickedColor,
+		Label:           customLabel,
+		ShowLabel:       showLabel,
 	}
 
-	// Parse template with custom "isInt" function
+	// Parse template with custom functions
 	tpl := template.New("progress.html").Funcs(template.FuncMap{
 		"isInt": isInt,
+		"div":   div,
 	})
 	tpl, err = tpl.ParseFiles("progress.html")
 	if err != nil {
