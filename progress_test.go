@@ -68,6 +68,9 @@ func TestProgressReturnsSVGForValidInput(t *testing.T) {
 	if !strings.Contains(body, "76%") {
 		t.Fatalf("expected percentage text in SVG body, got %q", body)
 	}
+	if strings.Contains(body, "%%") {
+		t.Fatalf("expected single percent symbol in SVG body, got %q", body)
+	}
 
 	if !strings.Contains(body, `width="68" height="20" fill="#5cb85c"`) {
 		t.Fatalf("expected progress width/color in SVG body, got %q", body)
