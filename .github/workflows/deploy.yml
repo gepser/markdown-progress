@@ -22,7 +22,7 @@ jobs:
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       GCP_REGION: ${{ vars.GCP_REGION || 'us-central1' }}
       GCP_FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'progress' }}
-      GCP_RUNTIME: ${{ vars.GCP_RUNTIME || 'go124' }}
+      GCP_RUNTIME: ${{ vars.GCP_RUNTIME || 'go125' }}
       GCP_ENTRY_POINT: ${{ vars.GCP_ENTRY_POINT || 'Progress' }}
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}

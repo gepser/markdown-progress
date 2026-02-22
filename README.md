@@ -1,5 +1,9 @@
 # Markdown Progress ![](https://geps.dev/progress/100)
 
+[![CI](https://github.com/gepser/markdown-progress/actions/workflows/ci.yml/badge.svg)](https://github.com/gepser/markdown-progress/actions/workflows/ci.yml)
+[![Deploy](https://github.com/gepser/markdown-progress/actions/workflows/deploy.yml/badge.svg)](https://github.com/gepser/markdown-progress/actions/workflows/deploy.yml)
+[![Smoke Tests](https://github.com/gepser/markdown-progress/actions/workflows/smoke.yml/badge.svg)](https://github.com/gepser/markdown-progress/actions/workflows/smoke.yml)
+
 Progress bars for markdown.
 
 Have you ever wanted to track some progress in your markdown documents?
@@ -7,16 +11,16 @@ Well, I do, and I used `progressed.io` before but it was shut down.
 
 So I decided to recreate it.
 
-## Usage
+## 🚀 Usage
 
 ```md
 ![](https://geps.dev/progress/10)
 ```
 
-> **Note**
+> [!NOTE]
 > I'll try to keep this domain name up as much as possible, so wish me a long life 🙂
 
-## API Contract
+## 📜 API Contract
 
 ### Endpoint
 
@@ -45,7 +49,10 @@ Headers for successful responses:
 - `Content-Type: image/svg+xml`
 - `Cache-Control: public, max-age=300`
 
-## Examples
+> [!TIP]
+> `percentage` values outside `0..100` are accepted and clamped automatically.
+
+## ✨ Examples
 
 ![](https://geps.dev/progress/10)
 
@@ -73,7 +80,7 @@ Rendered examples:
 
 ![](https://geps.dev/progress/75?dangerColor=800000&warningColor=ff9900&successColor=006600)
 
-## Local Development
+## 🛠️ Local Development
 
 ### Prerequisites
 
@@ -114,6 +121,11 @@ BASE_URL=https://geps.dev mise exec -- make smoke
 
 The smoke test validates status codes, headers, and basic content contract.
 
+> [!TIP]
+> If your `BASE_URL` already includes the function path
+> (example: `https://REGION-PROJECT.cloudfunctions.net/progress`),
+> keep `PROGRESS_PATH` empty.
+
 If your `BASE_URL` already includes the function path (for example
 `https://REGION-PROJECT.cloudfunctions.net/progress`), set:
 
@@ -121,7 +133,7 @@ If your `BASE_URL` already includes the function path (for example
 BASE_URL=https://REGION-PROJECT.cloudfunctions.net/progress PROGRESS_PATH="" mise exec -- make smoke
 ```
 
-## Deploy (Google Cloud)
+## ☁️ Deploy (Google Cloud)
 
 Set your project first:
 
@@ -133,7 +145,7 @@ gcloud config set project THE_PROJECT_NAME
 Deploy as an HTTP function with `Progress` as entrypoint:
 
 ```bash
-gcloud functions deploy progress --gen2 --runtime go124 --entry-point Progress --trigger-http --allow-unauthenticated --region us-central1
+gcloud functions deploy progress --gen2 --runtime go125 --entry-point Progress --trigger-http --allow-unauthenticated --region us-central1
 ```
 
 After deploy, run smoke tests:
@@ -142,12 +154,16 @@ After deploy, run smoke tests:
 BASE_URL=https://YOUR_DOMAIN_OR_FUNCTION_URL mise exec -- make smoke
 ```
 
-## Automated Deploy (GitHub Actions -> GCP)
+> [!IMPORTANT]
+> This endpoint is intentionally public (`allUsers` invoker) so it can be used
+> directly from markdown image links across repos.
+
+## 🤖 Automated Deploy (GitHub Actions -> GCP)
 
 This repo includes `.github/workflows/deploy.yml` to deploy automatically on
 push to `master` (and manually via `workflow_dispatch`).
 
-### 1) Configure GitHub repository variables
+### 1) 🔐 Configure GitHub repository variables
 
 Required:
 
@@ -159,10 +175,10 @@ Optional (defaults are already set in workflow):
 
 - `GCP_REGION` (`us-central1`)
 - `GCP_FUNCTION_NAME` (`progress`)
-- `GCP_RUNTIME` (`go124`)
+- `GCP_RUNTIME` (`go125`)
 - `GCP_ENTRY_POINT` (`Progress`)
 
-### 2) One-time GCP setup (OIDC/WIF, no JSON keys)
+### 2) 🧩 One-time GCP setup (OIDC/WIF, no JSON keys)
 
 Create deployer service account:
 
@@ -241,12 +257,12 @@ Provider resource name to set in GitHub variable:
 projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID
 ```
 
-## CI
+## ✅ CI
 
 - `CI` workflow runs `go test` and `go vet` on pushes and PRs.
 - `Smoke Tests` workflow can be run manually (`workflow_dispatch`) with a `base_url` input.
 - `Deploy` workflow deploys to GCP on `master` using OIDC/WIF.
 
-## Contributing
+## 🤝 Contributing
 
 See `CONTRIBUTING.md`.
