@@ -63,6 +63,7 @@ jobs:
           runtime: ${{ env.GCP_RUNTIME }}
           entry_point: ${{ env.GCP_ENTRY_POINT }}
           environment: GEN_2
+          allow_unauthenticated: true
           source_dir: ./
           all_traffic_on_latest_revision: true
 
