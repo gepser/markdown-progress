@@ -1,0 +1,76 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ vars.GCP_REGION || 'us-central1' }}
+      GCP_FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'progress' }}
+      GCP_RUNTIME: ${{ vars.GCP_RUNTIME || 'go124' }}
+      GCP_ENTRY_POINT: ${{ vars.GCP_ENTRY_POINT || 'Progress' }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deploy configuration
+        run: |
+          set -euo pipefail
+          required_vars=(
+            GCP_PROJECT_ID
+            GCP_WORKLOAD_IDENTITY_PROVIDER
+            GCP_SERVICE_ACCOUNT
+          )
+
+          for var in "${required_vars[@]}"; do
+            if [[ -z "${!var:-}" ]]; then
+              echo "Missing required repository variable: $var"
+              exit 1
+            fi
+          done
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy Cloud Function
+        id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v4
+        with:
+          name: ${{ env.GCP_FUNCTION_NAME }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          region: ${{ env.GCP_REGION }}
+          runtime: ${{ env.GCP_RUNTIME }}
+          entry_point: ${{ env.GCP_ENTRY_POINT }}
+          environment: GEN_2
+          source_dir: ./
+          all_traffic_on_latest_revision: true
+
+      - name: Smoke test deployed endpoint
+        env:
+          BASE_URL: ${{ steps.deploy.outputs.url }}
+          PROGRESS_PATH: ""
+        run: bash ./scripts/smoke.sh
+
+      - name: Print deployed URL
+        run: echo "Deployed URL: ${{ steps.deploy.outputs.url }}"
