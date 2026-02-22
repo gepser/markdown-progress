@@ -73,4 +73,5 @@ jobs:
         run: bash ./scripts/smoke.sh
 
       - name: Print deployed URL
-        run: echo "Deployed URL: ${{ steps.deploy.outputs.url }}"
+        run: |
+          echo "Deployed URL: ${{ steps.deploy.outputs.url }}"
