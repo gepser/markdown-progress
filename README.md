@@ -27,20 +27,25 @@ So I decided to recreate it.
 - `GET /progress/{percentage}`
 - `HEAD /progress/{percentage}`
 
-`percentage` must be an integer and is clamped to `0..100`.
+`percentage` can be an integer or float and is clamped to `0..100`.
 
 ### Query params
 
 - `dangerColor`
 - `warningColor`
 - `successColor`
+- `barColor` (overrides the bar fill color)
+- `label` (custom text inside the bar, max 64 chars)
+- `min`
+- `max`
 
 All color values must be 6-character hex values without `#` (example: `ff9900`).
+`min` and `max` must be provided together when used.
 
 ### Response behavior
 
 - `200 OK`: valid request, returns SVG.
-- `400 Bad Request`: invalid percentage or color format.
+- `400 Bad Request`: invalid numeric input, range config, label length, or color format.
 - `405 Method Not Allowed`: any method different from `GET` or `HEAD`.
 - `500 Internal Server Error`: template parse/render failure.
 
@@ -59,6 +64,10 @@ Headers for successful responses:
 ![](https://geps.dev/progress/50)
 
 ![](https://geps.dev/progress/75)
+
+Float percentage:
+
+![](https://geps.dev/progress/76.5)
 
 ### Custom colors
 
@@ -79,6 +88,14 @@ Rendered examples:
 ![](https://geps.dev/progress/50?dangerColor=800000&warningColor=ff9900&successColor=006600)
 
 ![](https://geps.dev/progress/75?dangerColor=800000&warningColor=ff9900&successColor=006600)
+
+### Data bar mode (from arbitrary numeric range)
+
+```md
+![](https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4)
+```
+
+![](https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4)
 
 ## 🛠️ Local Development
 
