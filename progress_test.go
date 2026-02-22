@@ -77,6 +77,51 @@ func TestProgressReturnsSVGForValidInput(t *testing.T) {
 	}
 }
 
+func TestProgressSupportsFloatPercentages(t *testing.T) {
+	rr := executeProgressRequest("/progress/76.5")
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "76.5%") {
+		t.Fatalf("expected decimal percentage in body, got %q", body)
+	}
+	if !strings.Contains(body, `width="68" height="20" fill="#5cb85c"`) {
+		t.Fatalf("expected decimal percentage width/color in SVG body, got %q", body)
+	}
+}
+
+func TestProgressSupportsDataBarMode(t *testing.T) {
+	rr := executeProgressRequest("/progress/186?label=186&min=0&max=241&barColor=4472C4")
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "186") {
+		t.Fatalf("expected custom label in body, got %q", body)
+	}
+	if !strings.Contains(body, `width="69" height="20" fill="#4472c4"`) {
+		t.Fatalf("expected scaled width/custom color in body, got %q", body)
+	}
+}
+
+func TestProgressDataBarDefaultsLabelToRawValue(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?min=0&max=200")
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "50\n") || strings.Contains(body, "50%") {
+		t.Fatalf("expected raw value label in body, got %q", body)
+	}
+	if !strings.Contains(body, `width="22" height="20" fill="#d9534f"`) {
+		t.Fatalf("expected scaled width and threshold color in body, got %q", body)
+	}
+}
+
 func TestProgressSupportsHEAD(t *testing.T) {
 	rr := executeProgressRequestWithMethod(http.MethodHead, "/progress/76")
 
@@ -116,7 +161,7 @@ func TestProgressReturnsBadRequestForInvalidPercentage(t *testing.T) {
 		t.Fatalf("expected status 400, got %d", rr.Code)
 	}
 
-	if !strings.Contains(rr.Body.String(), "percentage must be an integer") {
+	if !strings.Contains(rr.Body.String(), "percentage must be a number") {
 		t.Fatalf("expected invalid percentage message, got %q", rr.Body.String())
 	}
 }
@@ -130,6 +175,59 @@ func TestProgressReturnsBadRequestForInvalidColor(t *testing.T) {
 
 	if !strings.Contains(rr.Body.String(), "successColor must be a 6-character hex value") {
 		t.Fatalf("expected invalid color message, got %q", rr.Body.String())
+	}
+}
+
+func TestProgressReturnsBadRequestForInvalidBarColor(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?barColor=nothex")
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rr.Code)
+	}
+
+	if !strings.Contains(rr.Body.String(), "barColor must be a 6-character hex value") {
+		t.Fatalf("expected invalid bar color message, got %q", rr.Body.String())
+	}
+}
+
+func TestProgressRequiresMinAndMaxTogether(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?min=0")
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "min and max must be provided together") {
+		t.Fatalf("expected min/max pair message, got %q", rr.Body.String())
+	}
+}
+
+func TestProgressRejectsInvalidMinMaxValues(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?min=abc&max=100")
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "min and max must be numeric values") {
+		t.Fatalf("expected min/max numeric message, got %q", rr.Body.String())
+	}
+}
+
+func TestProgressRejectsInvalidRangeOrder(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?min=10&max=10")
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "max must be greater than min") {
+		t.Fatalf("expected max greater than min message, got %q", rr.Body.String())
+	}
+}
+
+func TestProgressRejectsTooLongLabel(t *testing.T) {
+	tooLongLabel := strings.Repeat("x", 65)
+	rr := executeProgressRequest("/progress/50?label=" + tooLongLabel)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "label is too long") {
+		t.Fatalf("expected label length message, got %q", rr.Body.String())
 	}
 }
 
