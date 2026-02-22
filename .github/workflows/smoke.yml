@@ -1,0 +1,21 @@
+name: Smoke Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL for deployed endpoint (example: https://geps.dev)"
+        required: true
+        type: string
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run smoke tests
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+        run: bash ./scripts/smoke.sh
