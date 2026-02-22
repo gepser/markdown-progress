@@ -7,7 +7,8 @@ if [[ -z "${BASE_URL:-}" ]]; then
 fi
 
 BASE_URL="${BASE_URL%/}"
-PROGRESS_PATH="${PROGRESS_PATH:-/progress}"
+# Use /progress when variable is unset; keep explicit empty value as-is.
+PROGRESS_PATH="${PROGRESS_PATH-/progress}"
 
 if [[ -n "$PROGRESS_PATH" && "$PROGRESS_PATH" != /* ]]; then
   PROGRESS_PATH="/${PROGRESS_PATH}"
