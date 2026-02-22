@@ -1,14 +1,20 @@
 # Markdown Progress ![](https://geps.dev/progress/100)
 
-SVG progress bars for Markdown.
+Progress bars for markdown.
 
-If you want to track progress in markdown documents, embed the endpoint as an image.
+Have you ever wanted to track some progress in your markdown documents?
+Well, I do, and I used `progressed.io` before but it was shut down.
+
+So I decided to recreate it.
 
 ## Usage
 
 ```md
 ![](https://geps.dev/progress/10)
 ```
+
+> **Note**
+> I'll try to keep this domain name up as much as possible, so wish me a long life 🙂
 
 ## API Contract
 
