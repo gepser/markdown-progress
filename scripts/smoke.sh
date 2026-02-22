@@ -7,6 +7,21 @@ if [[ -z "${BASE_URL:-}" ]]; then
 fi
 
 BASE_URL="${BASE_URL%/}"
+PROGRESS_PATH="${PROGRESS_PATH:-/progress}"
+
+if [[ -n "$PROGRESS_PATH" && "$PROGRESS_PATH" != /* ]]; then
+  PROGRESS_PATH="/${PROGRESS_PATH}"
+fi
+
+progress_url() {
+  local suffix="$1"
+  if [[ -z "$PROGRESS_PATH" ]]; then
+    echo "${BASE_URL}${suffix}"
+    return
+  fi
+
+  echo "${BASE_URL}${PROGRESS_PATH}${suffix}"
+}
 
 expect_status() {
   local expected="$1"
@@ -60,16 +75,16 @@ expect_body_contains() {
 
 echo "Running smoke tests against ${BASE_URL}"
 
-expect_status "200" "GET" "${BASE_URL}/progress/76"
-expect_header_contains "${BASE_URL}/progress/76" "Content-Type" "image/svg+xml"
-expect_header_contains "${BASE_URL}/progress/76" "Cache-Control" "max-age=300"
-expect_body_contains "${BASE_URL}/progress/76" "76%"
+expect_status "200" "GET" "$(progress_url "/76")"
+expect_header_contains "$(progress_url "/76")" "Content-Type" "image/svg+xml"
+expect_header_contains "$(progress_url "/76")" "Cache-Control" "max-age=300"
+expect_body_contains "$(progress_url "/76")" "76%"
 
-expect_status "400" "GET" "${BASE_URL}/progress/not-a-number"
-expect_status "400" "GET" "${BASE_URL}/progress/50?successColor=nothex"
-expect_status "405" "POST" "${BASE_URL}/progress/50"
+expect_status "400" "GET" "$(progress_url "/not-a-number")"
+expect_status "400" "GET" "$(progress_url "/50?successColor=nothex")"
+expect_status "405" "POST" "$(progress_url "/50")"
 
-expect_status "200" "GET" "${BASE_URL}/progress/150"
-expect_body_contains "${BASE_URL}/progress/150" "100%"
+expect_status "200" "GET" "$(progress_url "/150")"
+expect_body_contains "$(progress_url "/150")" "100%"
 
 echo "Smoke tests passed."
