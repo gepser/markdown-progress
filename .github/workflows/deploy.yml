@@ -53,6 +53,9 @@ jobs:
           service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
           project_id: ${{ env.GCP_PROJECT_ID }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Deploy Cloud Function
         id: deploy
         uses: google-github-actions/deploy-cloud-functions@v4
@@ -63,9 +66,15 @@ jobs:
           runtime: ${{ env.GCP_RUNTIME }}
           entry_point: ${{ env.GCP_ENTRY_POINT }}
           environment: GEN_2
-          allow_unauthenticated: true
           source_dir: ./
           all_traffic_on_latest_revision: true
+
+      - name: Allow unauthenticated invocations
+        run: |
+          gcloud functions add-invoker-policy-binding "${GCP_FUNCTION_NAME}" \
+            --project "${GCP_PROJECT_ID}" \
+            --region "${GCP_REGION}" \
+            --member "allUsers"
 
       - name: Smoke test deployed endpoint
         env:
