@@ -2,11 +2,10 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
-	// Blank-import the function package so the init() runs
-	_ "geps.dev/progress"
-	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
+	"geps.dev/progress"
 )
 
 func main() {
@@ -15,7 +14,13 @@ func main() {
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		port = envPort
 	}
-	if err := funcframework.Start(port); err != nil {
-		log.Fatalf("funcframework.Start: %v\n", err)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/progress/", progress.Progress)
+
+	addr := ":" + port
+	log.Printf("Listening on %s", addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
+		log.Fatalf("http.ListenAndServe: %v\n", err)
 	}
 }

@@ -3,18 +3,47 @@
 Progress bars for markdown.
 
 Have you ever wanted to track some progress in your markdown documents?
-Well, I do, and I used `progressed.io` before but it was shutted down.
+Well, I do, and I used `progressed.io` before but it was shut down.
 
 So I decided to recreate it.
 
 ## Usage
 
-Add it as an image in your favorite markdown document, like this github readme, and change the progress number at the end.
-
-    ![](https://geps.dev/progress/10)
+```md
+![](https://geps.dev/progress/10)
+```
 
 > **Note**
-> I'll try to keep this domain name up as much as possible, so wish me a long life 😁
+> I'll try to keep this domain name up as much as possible, so wish me a long life 🙂
+
+## API Contract
+
+### Endpoint
+
+- `GET /progress/{percentage}`
+- `HEAD /progress/{percentage}`
+
+`percentage` must be an integer and is clamped to `0..100`.
+
+### Query params
+
+- `dangerColor`
+- `warningColor`
+- `successColor`
+
+All color values must be 6-character hex values without `#` (example: `ff9900`).
+
+### Response behavior
+
+- `200 OK`: valid request, returns SVG.
+- `400 Bad Request`: invalid percentage or color format.
+- `405 Method Not Allowed`: any method different from `GET` or `HEAD`.
+- `500 Internal Server Error`: template parse/render failure.
+
+Headers for successful responses:
+
+- `Content-Type: image/svg+xml`
+- `Cache-Control: public, max-age=300`
 
 ## Examples
 
@@ -24,20 +53,19 @@ Add it as an image in your favorite markdown document, like this github readme, 
 
 ![](https://geps.dev/progress/75)
 
-### Custom colors?
+### Custom colors
 
-If you want to customize the colors you can use this query params:
+You can customize colors through query params:
 
-    dangerColor
-    warningColor
-    successColor
+- `dangerColor`
+- `warningColor`
+- `successColor`
 
-It will look like this:
+```md
+![](https://geps.dev/progress/32?dangerColor=800000&warningColor=ff9900&successColor=006600)
+```
 
-    ![](https://geps.dev/progress/32?dangerColor=800000&warningColor=ff9900&successColor=006600)
-
-And the results will look like this:
-
+Rendered examples:
 
 ![](https://geps.dev/progress/10?dangerColor=800000&warningColor=ff9900&successColor=006600)
 
@@ -45,33 +73,73 @@ And the results will look like this:
 
 ![](https://geps.dev/progress/75?dangerColor=800000&warningColor=ff9900&successColor=006600)
 
-## Deploy
+## Local Development
 
-So if you want to host it and have your own domain, you can just deploy it on your preferred cloud.
+### Prerequisites
 
-It's straight forward for GCP but with some little changes you can do the same for any cloud since this is a simple function (or lambda).
+- `mise` installed
 
-### Google Cloud
+### Setup
 
-Login and set the project in `gcloud` if you are not already logged in.
+```bash
+mise install
+mise exec -- make setup
+```
 
-    gcloud auth login
-    gcloud config set project THE_PROJECT_NAME
+Run locally:
 
-Deploy it as an HTTP Cloud Function with the `Progress` entrypoint.
+```bash
+mise exec -- make run
+```
 
-    gcloud functions deploy progress --runtime go119 --entry-point Progress --trigger-http --memory 128MB --allow-unauthenticated
+Try it in a browser:
 
-## Test it locally
+```text
+http://localhost:8080/progress/76
+```
 
-Build the project so it downloads the dependencies
+### Quality checks
 
-    go build
+```bash
+mise exec -- make test
+mise exec -- make vet
+mise exec -- make check
+```
 
-Run it
+### Smoke tests against deployed URL
 
-    go run cmd/main.go
+```bash
+BASE_URL=https://geps.dev mise exec -- make smoke
+```
 
-You can visit the endpoint in your favorite browser, for example:
+The smoke test validates status codes, headers, and basic content contract.
 
-    http://localhost:8080/progress/76
+## Deploy (Google Cloud)
+
+Set your project first:
+
+```bash
+gcloud auth login
+gcloud config set project THE_PROJECT_NAME
+```
+
+Deploy as an HTTP function with `Progress` as entrypoint:
+
+```bash
+gcloud functions deploy progress --gen2 --runtime go124 --entry-point Progress --trigger-http --allow-unauthenticated --region us-central1
+```
+
+After deploy, run smoke tests:
+
+```bash
+BASE_URL=https://YOUR_DOMAIN_OR_FUNCTION_URL mise exec -- make smoke
+```
+
+## CI
+
+- `CI` workflow runs `go test` and `go vet` on pushes and PRs.
+- `Smoke Tests` workflow can be run manually (`workflow_dispatch`) with a `base_url` input.
+
+## Contributing
+
+See `CONTRIBUTING.md`.
