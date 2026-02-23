@@ -40,3 +40,9 @@ BASE_URL=https://YOUR_DOMAIN_OR_FUNCTION_URL mise exec -- make smoke
 - Keep changes focused and small.
 - Include tests for behavioral changes.
 - Update `README.md` when API behavior changes.
+
+## Dependency maintenance
+
+- Dependabot PRs (`gomod`, `github-actions`) are reviewed weekly.
+- Merge only with passing CI checks.
+- For failing dependency PRs, push a fix commit to the PR branch or replace it with a clean follow-up PR.

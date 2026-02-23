@@ -263,6 +263,12 @@ projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers
 - `Smoke Tests` workflow can be run manually (`workflow_dispatch`) with a `base_url` input.
 - `Deploy` workflow deploys to GCP on `master` using OIDC/WIF.
 
+## 📦 Dependency Policy
+
+- Dependabot is enabled for `gomod` and `github-actions` on a weekly schedule.
+- Merge dependency PRs only after CI is green.
+- If a dependency PR fails CI, either patch on top of that branch or close and open a follow-up PR from `master`.
+
 ## 🤝 Contributing
 
 See `CONTRIBUTING.md`.
