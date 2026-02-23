@@ -20,6 +20,94 @@ So I decided to recreate it.
 > [!NOTE]
 > I'll try to keep this domain name up as much as possible, so wish me a long life 🙂
 
+## ✨ Examples
+
+> [!TIP]
+> Every snippet below is ready to paste into GitHub Markdown.
+
+### 1) Integer percentage
+
+![](https://geps.dev/progress/10)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/10)
+> ```
+
+### 2) Float percentage
+
+![](https://geps.dev/progress/76.5)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/76.5)
+> ```
+
+### 3) Automatic clamping (>100)
+
+![](https://geps.dev/progress/150)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/150)
+> ```
+
+### 4) Automatic clamping (<0)
+
+![](https://geps.dev/progress/-10)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/-10)
+> ```
+
+### 5) Custom threshold colors (`dangerColor`, `warningColor`, `successColor`)
+
+![](https://geps.dev/progress/10?dangerColor=800000&warningColor=ff9900&successColor=006600)
+![](https://geps.dev/progress/50?dangerColor=800000&warningColor=ff9900&successColor=006600)
+![](https://geps.dev/progress/75?dangerColor=800000&warningColor=ff9900&successColor=006600)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/50?dangerColor=800000&warningColor=ff9900&successColor=006600)
+> ```
+
+### 6) Fixed bar color (`barColor`)
+
+![](https://geps.dev/progress/50?barColor=4472C4)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/50?barColor=4472C4)
+> ```
+
+### 7) Data-bar mode (`min` + `max` + `label` + `barColor`)
+
+![](https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4)
+> ```
+
+### 8) Data-bar mode with default label (raw value)
+
+![](https://geps.dev/progress/50?min=0&max=200)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/50?min=0&max=200)
+> ```
+
+### 9) Custom text label in percentage mode
+
+![](https://geps.dev/progress/70?label=Sprint%201)
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/70?label=Sprint%201)
+> ```
+
 ## 📜 API Contract
 
 ### Endpoint
@@ -56,112 +144,6 @@ Headers for successful responses:
 
 > [!TIP]
 > `percentage` values outside `0..100` are accepted and clamped automatically.
-
-## ✨ Examples
-
-> [!TIP]
-> Every snippet below is ready to paste into GitHub Markdown.
-
-### 1) Integer percentage
-
-![](https://geps.dev/progress/10)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/10`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/10)
-> ```
-
-### 2) Float percentage
-
-![](https://geps.dev/progress/76.5)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/76.5`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/76.5)
-> ```
-
-### 3) Automatic clamping (>100)
-
-![](https://geps.dev/progress/150)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/150`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/150)
-> ```
-
-### 4) Automatic clamping (<0)
-
-![](https://geps.dev/progress/-10)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/-10`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/-10)
-> ```
-
-### 5) Custom threshold colors (`dangerColor`, `warningColor`, `successColor`)
-
-![](https://geps.dev/progress/10?dangerColor=800000&warningColor=ff9900&successColor=006600)
-![](https://geps.dev/progress/50?dangerColor=800000&warningColor=ff9900&successColor=006600)
-![](https://geps.dev/progress/75?dangerColor=800000&warningColor=ff9900&successColor=006600)
-
-> [!NOTE]
-> URL pattern: `https://geps.dev/progress/{value}?dangerColor=800000&warningColor=ff9900&successColor=006600`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/50?dangerColor=800000&warningColor=ff9900&successColor=006600)
-> ```
-
-### 6) Fixed bar color (`barColor`)
-
-![](https://geps.dev/progress/50?barColor=4472C4)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/50?barColor=4472C4`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/50?barColor=4472C4)
-> ```
-
-### 7) Data-bar mode (`min` + `max` + `label` + `barColor`)
-
-![](https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/186?label=186&min=0&max=241&barColor=4472C4)
-> ```
-
-### 8) Data-bar mode with default label (raw value)
-
-![](https://geps.dev/progress/50?min=0&max=200)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/50?min=0&max=200`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/50?min=0&max=200)
-> ```
-
-### 9) Custom text label in percentage mode
-
-![](https://geps.dev/progress/70?label=Sprint%201)
-
-> [!NOTE]
-> URL: `https://geps.dev/progress/70?label=Sprint%201`  
-> Markdown:
-> ```md
-> ![](https://geps.dev/progress/70?label=Sprint%201)
-> ```
 
 ## 🛠️ Local Development
 
