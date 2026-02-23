@@ -54,7 +54,7 @@ jobs:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Deploy Cloud Function
         id: deploy
