@@ -108,6 +108,19 @@ So I decided to recreate it.
 > ![](https://geps.dev/progress/70?label=Sprint%201)
 > ```
 
+### 10) Unicode style (`style=unicode`)
+
+![](https://geps.dev/progress/80?style=unicode)
+![](https://geps.dev/progress/35?style=unicode&label=Sprint%201)
+
+Renders a 10-block bar (`████████░░`) followed by the label. Works with `label`, `barColor`, and the threshold color params; the success tier defaults to GitHub green.
+
+> [!NOTE]
+> ```md
+> ![](https://geps.dev/progress/80?style=unicode)
+> ![](https://geps.dev/progress/35?style=unicode&label=Sprint%201)
+> ```
+
 ## 📜 API Contract
 
 ### Endpoint
@@ -126,6 +139,7 @@ So I decided to recreate it.
 - `label` (custom text inside the bar, max 64 chars)
 - `min`
 - `max`
+- `style` (optional; only `unicode` is supported, renders a block-character bar)
 
 All color values must be 6-character hex values without `#` (example: `ff9900`).
 `min` and `max` must be provided together when used.
@@ -133,7 +147,7 @@ All color values must be 6-character hex values without `#` (example: `ff9900`).
 ### Response behavior
 
 - `200 OK`: valid request, returns SVG.
-- `400 Bad Request`: invalid numeric input, range config, label length, or color format.
+- `400 Bad Request`: invalid numeric input, range config, label length, color format, or unsupported `style`.
 - `405 Method Not Allowed`: any method different from `GET` or `HEAD`.
 - `500 Internal Server Error`: template parse/render failure.
 

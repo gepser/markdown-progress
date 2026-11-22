@@ -231,6 +231,174 @@ func TestProgressRejectsTooLongLabel(t *testing.T) {
 	}
 }
 
+func TestBuildUnicodeBar(t *testing.T) {
+	cases := []struct {
+		pct   float64
+		label string
+		want  string
+	}{
+		{0, "0%", "░░░░░░░░░░ 0%"},
+		{10, "10%", "█░░░░░░░░░ 10%"},
+		{50, "50%", "█████░░░░░ 50%"},
+		{80, "80%", "████████░░ 80%"},
+		{100, "100%", "██████████ 100%"},
+		// rounding: 75% → 7.5 blocks → rounds to 8
+		{75, "75%", "████████░░ 75%"},
+		// rounding: 74% → 7.4 blocks → rounds to 7
+		{74, "74%", "███████░░░ 74%"},
+	}
+	for _, c := range cases {
+		got := buildUnicodeBar(c.pct, c.label)
+		if got != c.want {
+			t.Errorf("buildUnicodeBar(%v, %q) = %q, want %q", c.pct, c.label, got, c.want)
+		}
+	}
+}
+
+func TestProgressUnicodeStyleReturnsTextBar(t *testing.T) {
+	rr := executeProgressRequest("/progress/80?style=unicode")
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	if got := rr.Header().Get("Content-Type"); got != "image/svg+xml" {
+		t.Fatalf("expected image/svg+xml content type, got %q", got)
+	}
+
+	if got := rr.Header().Get("Cache-Control"); got != cacheControlValue {
+		t.Fatalf("expected cache control %q, got %q", cacheControlValue, got)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "████████") {
+		t.Fatalf("expected 8 filled blocks in unicode SVG, got %q", body)
+	}
+	if !strings.Contains(body, "░░") {
+		t.Fatalf("expected 2 empty blocks in unicode SVG, got %q", body)
+	}
+	if !strings.Contains(body, "80%") {
+		t.Fatalf("expected label '80%%' in unicode SVG, got %q", body)
+	}
+	if !strings.Contains(body, unicodeGreen) {
+		t.Fatalf("expected filled color %q in unicode SVG, got %q", unicodeGreen, body)
+	}
+	if !strings.Contains(body, unicodeEmptyColor) {
+		t.Fatalf("expected empty color %q in unicode SVG, got %q", unicodeEmptyColor, body)
+	}
+	if strings.Contains(body, "letter-spacing") {
+		t.Fatalf("expected no letter-spacing in unicode SVG, got %q", body)
+	}
+}
+
+func TestProgressUnicodeStyleWithCustomLabel(t *testing.T) {
+	rr := executeProgressRequest("/progress/80?style=unicode&label=80%25+Complete")
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "80% Complete") {
+		t.Fatalf("expected custom label in unicode SVG, got %q", body)
+	}
+	if !strings.Contains(body, "████████") {
+		t.Fatalf("expected filled blocks in unicode SVG, got %q", body)
+	}
+}
+
+func TestProgressUnicodeStyleWithMinMax(t *testing.T) {
+	// 50 out of 0–100 → 50% → 5 filled blocks; label shows raw value "50"
+	rr := executeProgressRequest("/progress/50?style=unicode&min=0&max=100")
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "█████") {
+		t.Fatalf("expected 5 filled blocks in unicode SVG, got %q", body)
+	}
+	if strings.Contains(body, "50%") {
+		t.Fatalf("expected raw value label (not percent) in unicode SVG, got %q", body)
+	}
+}
+
+func TestProgressUnicodeStyleClampsPercentage(t *testing.T) {
+	high := executeProgressRequest("/progress/150?style=unicode")
+	if high.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", high.Code)
+	}
+	highBody := high.Body.String()
+	if !strings.Contains(highBody, "██████████") {
+		t.Fatalf("expected full bar (10 blocks) for >100%%, got %q", highBody)
+	}
+	if !strings.Contains(highBody, "100%") {
+		t.Fatalf("expected clamped label '100%%' for >100%%, got %q", highBody)
+	}
+
+	low := executeProgressRequest("/progress/-10?style=unicode")
+	if low.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", low.Code)
+	}
+	lowBody := low.Body.String()
+	if !strings.Contains(lowBody, "░░░░░░░░░░") {
+		t.Fatalf("expected empty bar (10 empty blocks) for <0%%, got %q", lowBody)
+	}
+	if !strings.Contains(lowBody, "0%") {
+		t.Fatalf("expected clamped label '0%%' for <0%%, got %q", lowBody)
+	}
+}
+
+func TestProgressUnicodeStyleSupportsHEAD(t *testing.T) {
+	rr := executeProgressRequestWithMethod(http.MethodHead, "/progress/80?style=unicode")
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+	if got := rr.Header().Get("Content-Type"); got != "image/svg+xml" {
+		t.Fatalf("expected image/svg+xml content type for HEAD, got %q", got)
+	}
+	if rr.Body.Len() != 0 {
+		t.Fatalf("expected empty body for HEAD, got %q", rr.Body.String())
+	}
+}
+
+func TestProgressUnicodeStyleUsesGithubGreenByDefault(t *testing.T) {
+	rr := executeProgressRequest("/progress/80?style=unicode")
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), unicodeGreen) {
+		t.Fatalf("expected default filled color %q in unicode SVG, got %q", unicodeGreen, rr.Body.String())
+	}
+}
+
+func TestProgressUnicodeStyleBarColorOverridesDefault(t *testing.T) {
+	rr := executeProgressRequest("/progress/80?style=unicode&barColor=ff6600")
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+	body := rr.Body.String()
+	if !strings.Contains(body, "#ff6600") {
+		t.Fatalf("expected custom barColor #ff6600 in unicode SVG, got %q", body)
+	}
+	if strings.Contains(body, unicodeGreen) {
+		t.Fatalf("expected default green to be replaced by barColor, got %q", body)
+	}
+}
+
+func TestProgressRejectsInvalidStyle(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?style=svg")
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "style must be") {
+		t.Fatalf("expected style error message, got %q", rr.Body.String())
+	}
+}
+
 func TestProgressClampsPercentageToRange(t *testing.T) {
 	high := executeProgressRequest("/progress/150")
 	if high.Code != http.StatusOK {

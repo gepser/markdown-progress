@@ -2,6 +2,7 @@ package progress
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -25,6 +26,16 @@ type Data struct {
 	PickedColor     string
 }
 
+// UnicodeData holds the inputs for the unicode SVG template.
+type UnicodeData struct {
+	FilledBlocks string
+	EmptyBlocks  string
+	FilledColor  string
+	EmptyColor   string
+	Label        string
+	Width        int
+}
+
 const (
 	gcloudFuncSourceDir = "serverless_function_source_code"
 	minPercentage       = 0.0
@@ -32,6 +43,10 @@ const (
 	totalBarWidth       = 90.0
 	cacheControlValue   = "public, max-age=300"
 	maxLabelRunes       = 64
+	unicodeBarBlocks    = 10
+	unicodeBlockFull    = "█"
+	unicodeBlockEmpty   = "░"
+	unicodeCharWidth    = 9.0 // approximate advance width (px) per char at font-size 14
 )
 
 var (
@@ -40,9 +55,14 @@ var (
 	yellow = "#f0ad4e"
 	green  = "#5cb85c"
 
+	unicodeGreen      = "#0fbf3e" //GitHub's green
+	unicodeEmptyColor = "#909190"
+
 	hexColorPattern     = regexp.MustCompile(`^[0-9a-fA-F]{6}$`)
 	progressTemplate    *template.Template
 	progressTemplateErr error
+	unicodeTemplate     *template.Template
+	unicodeTemplateErr  error
 )
 
 func fixDir() {
@@ -118,9 +138,38 @@ func formatPercentLabel(value float64) string {
 	return formatNumber(value) + "%"
 }
 
+// unicodeBlocks returns the filled and empty block strings for a given percentage.
+func unicodeBlocks(percentage float64) (filled, empty string) {
+	n := int(math.Round(percentage / maxPercentage * unicodeBarBlocks))
+	if n < 0 {
+		n = 0
+	}
+	if n > unicodeBarBlocks {
+		n = unicodeBarBlocks
+	}
+	return strings.Repeat(unicodeBlockFull, n), strings.Repeat(unicodeBlockEmpty, unicodeBarBlocks-n)
+}
+
+// buildUnicodeBar renders a plain-text progress bar using Unicode block characters.
+// Example: buildUnicodeBar(80, "80%") → "████████░░ 80%"
+func buildUnicodeBar(percentage float64, label string) string {
+	filled, empty := unicodeBlocks(percentage)
+	return fmt.Sprintf("%s%s %s", filled, empty, label)
+}
+
+// unicodePickColor works like pickColor but defaults to unicodeGreen for the success tier,
+// giving unicode bars their distinct GitHub-green appearance.
+func unicodePickColor(percentage float64, successColor, warningColor, dangerColor string) string {
+	if successColor == "" {
+		successColor = unicodeGreen
+	}
+	return pickColor(percentage, successColor, warningColor, dangerColor)
+}
+
 func init() {
 	fixDir()
 	progressTemplate, progressTemplateErr = template.ParseFiles("progress.html")
+	unicodeTemplate, unicodeTemplateErr = template.ParseFiles("progress_unicode.html")
 	functions.HTTP("Progress", Progress)
 }
 
@@ -196,6 +245,13 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	style := r.URL.Query().Get("style")
+	if style != "" && style != "unicode" {
+		statusCode = http.StatusBadRequest
+		http.Error(w, "style must be 'unicode' or omitted", statusCode)
+		return
+	}
+
 	minRaw := r.URL.Query().Get("min")
 	maxRaw := r.URL.Query().Get("max")
 	hasMin := minRaw != ""
@@ -238,6 +294,47 @@ func Progress(w http.ResponseWriter, r *http.Request) {
 	}
 	if customLabel != "" {
 		label = customLabel
+	}
+
+	if style == "unicode" {
+		if unicodeTemplateErr != nil {
+			statusCode = http.StatusInternalServerError
+			log.Printf("unable to parse unicode template: %v", unicodeTemplateErr)
+			http.Error(w, "template unavailable", statusCode)
+			return
+		}
+
+		filledColor := unicodePickColor(percentage, successColor, warningColor, dangerColor)
+		if barColor != "" {
+			filledColor = barColor
+		}
+
+		filledBlocks, emptyBlocks := unicodeBlocks(percentage)
+		charCount := unicodeBarBlocks + 1 + utf8.RuneCountInString(label)
+		contentWidth := float64(charCount) * unicodeCharWidth
+		udata := UnicodeData{
+			FilledBlocks: filledBlocks,
+			EmptyBlocks:  emptyBlocks,
+			FilledColor:  filledColor,
+			EmptyColor:   unicodeEmptyColor,
+			Label:        label,
+			Width:        int(math.Ceil(contentWidth)) + 6,
+		}
+
+		ubuf := new(bytes.Buffer)
+		if err = unicodeTemplate.Execute(ubuf, udata); err != nil {
+			statusCode = http.StatusInternalServerError
+			log.Printf("unable to render unicode template: %v", err)
+			http.Error(w, "failed to render SVG", statusCode)
+			return
+		}
+
+		w.Header().Set("Content-Type", "image/svg+xml")
+		w.Header().Set("Cache-Control", cacheControlValue)
+		if r.Method != http.MethodHead {
+			_, _ = w.Write(ubuf.Bytes())
+		}
+		return
 	}
 
 	data := Data{
