@@ -1,6 +1,7 @@
 package progress
 
 import (
+	"encoding/xml"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -74,6 +75,25 @@ func TestProgressReturnsSVGForValidInput(t *testing.T) {
 
 	if !strings.Contains(body, `width="68" height="20" fill="#5cb85c"`) {
 		t.Fatalf("expected progress width/color in SVG body, got %q", body)
+	}
+}
+
+func TestProgressEscapesCustomLabel(t *testing.T) {
+	rr := executeProgressRequest("/progress/50?label=R%26D")
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "R&amp;D") {
+		t.Fatalf("expected escaped label in SVG body, got %q", body)
+	}
+
+	var svg struct {
+		XMLName xml.Name
+	}
+	if err := xml.Unmarshal([]byte(body), &svg); err != nil {
+		t.Fatalf("expected valid XML SVG, got error %v in body %q", err, body)
 	}
 }
 

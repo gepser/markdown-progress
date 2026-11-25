@@ -3,6 +3,7 @@ package progress
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"log"
 	"math"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 	"unicode/utf8"
 
